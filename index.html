@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orlay Pay — Continuità di vendita per eventi live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --sky:#00AEEF; --sky-deep:#0080C8; --sky-soft:rgba(0,174,239,0.12);
+  --radius:18px; --radius-sm:10px;
+  --ease:cubic-bezier(0.22,1,0.36,1);
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Geist',system-ui,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#080f18;--bg2:#0c1622;--bgc:#101d2e;--bgc2:#0e1a28;
+  --bd:rgba(255,255,255,0.07);--bds:rgba(0,174,239,0.18);
+  --t:#f0f4f8;--t2:#7a9ab5;--t3:#4a6a85;--sh:rgba(0,0,0,0.55);
+}
+[data-theme="light"]{
+  --bg:#f4f7fb;--bg2:#eaf0f7;--bgc:#fff;--bgc2:#f0f5fb;
+  --bd:rgba(0,0,0,0.07);--bds:rgba(0,144,200,0.2);
+  --t:#0a1828;--t2:#4a6a85;--t3:#8aaac5;--sh:rgba(0,60,120,0.1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--bg);color:var(--t);overflow-x:hidden;transition:background .4s,color .4s;cursor:none;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--sky);border-radius:3px;}
+
+/* CURSOR */
+.cur,.cur-ring{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;transform:translate(-50%,-50%);}
+.cur{width:8px;height:8px;background:var(--sky);transition:width .2s,height .2s;}
+.cur-ring{width:30px;height:30px;border:1.5px solid rgba(0,174,239,.4);transition:transform .3s var(--ease),width .3s,height .3s;}
+.cur.x{width:14px;height:14px;}.cur-ring.x{width:48px;height:48px;border-color:var(--sky);}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:800;padding:22px 64px;display:flex;align-items:center;justify-content:space-between;transition:all .4s var(--ease);}
+nav.stuck{padding:13px 64px;background:rgba(8,15,24,.82);backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--bd);}
+[data-theme="light"] nav.stuck{background:rgba(244,247,251,.88);}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--sans);font-weight:700;font-size:1.1rem;color:var(--t);letter-spacing:-.02em;}
+.brand-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--sky),var(--sky-deep));display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff;}
+.brand-pay{color:var(--sky);}
+.nav-mid{display:flex;gap:32px;}
+.nav-mid a{font-size:.82rem;font-weight:500;color:var(--t2);text-decoration:none;transition:color .25s;position:relative;}
+.nav-mid a::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:1px;background:var(--sky);transform:scaleX(0);transition:transform .3s var(--ease);}
+.nav-mid a:hover{color:var(--t);}.nav-mid a:hover::after{transform:scaleX(1);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.theme-btn{width:38px;height:38px;border-radius:50%;background:var(--bgc);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:none;color:var(--t2);font-size:.82rem;transition:all .3s;}
+.theme-btn:hover{border-color:var(--sky);color:var(--sky);}
+.btn-nav{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--sky),var(--sky-deep));color:#fff;font-family:var(--sans);font-weight:600;font-size:.78rem;padding:10px 20px;border-radius:100px;text-decoration:none;border:none;cursor:none;box-shadow:0 4px 20px rgba(0,174,239,.28);transition:transform .3s,box-shadow .3s;letter-spacing:.01em;}
+.btn-nav:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(0,174,239,.48);}
+
+/* HERO */
+#hero{min-height:100vh;position:relative;overflow:hidden;display:flex;align-items:center;padding:130px 64px 80px;}
+.hmesh{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 70% 60% at 65% 45%,rgba(0,174,239,.11) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 20% 75%,rgba(0,128,200,.07) 0%,transparent 55%);animation:mdrift 10s ease-in-out infinite alternate;}
+[data-theme="light"] .hmesh{background:radial-gradient(ellipse 70% 60% at 65% 45%,rgba(0,174,239,.07) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 20% 75%,rgba(0,128,200,.04) 0%,transparent 55%);}
+@keyframes mdrift{0%{transform:scale(1) translateX(0);}100%{transform:scale(1.06) translateX(-16px);}}
+.hlines{position:absolute;inset:0;z-index:0;background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse 55% 70% at 70% 50%,black 20%,transparent 70%);}
+.hero-in{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;width:100%;max-width:1280px;margin:0 auto;}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--sky-soft);border:1px solid var(--bds);color:var(--sky);font-size:.7rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:24px;}
+.pdot{width:5px;height:5px;background:var(--sky);border-radius:50%;animation:bl 1.8s infinite;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-family:var(--serif);font-size:clamp(2.5rem,4vw,4.1rem);font-weight:400;line-height:1.1;letter-spacing:-.02em;margin-bottom:20px;color:var(--t);}
+h1 em{font-style:italic;color:var(--sky);}
+.hbody{font-size:1rem;line-height:1.75;color:var(--t2);max-width:460px;margin-bottom:38px;font-weight:300;}
+.hactions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid var(--bd);color:var(--t2);font-size:.82rem;font-weight:500;padding:10px 20px;border-radius:100px;text-decoration:none;cursor:none;transition:all .3s;}
+.btn-ghost:hover{border-color:var(--sky);color:var(--sky);}
+.htags{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;}
+.htag{font-size:.68rem;color:var(--t3);padding:4px 12px;border:1px solid var(--bd);border-radius:100px;}
+
+/* Dashboard mockup */
+.dwrap{position:relative;animation:flt 7s ease-in-out infinite;}
+@keyframes flt{0%,100%{transform:perspective(1100px) rotateY(-7deg) rotateX(3deg) translateY(0);}50%{transform:perspective(1100px) rotateY(-4deg) rotateX(1.5deg) translateY(-12px);}}
+.dwrap:hover{animation:none;transform:perspective(1100px) rotateY(-1deg) rotateX(0);transition:transform .6s var(--ease);}
+.dglow{position:absolute;inset:-30px;background:radial-gradient(ellipse,rgba(0,174,239,.16),transparent 65%);pointer-events:none;z-index:0;}
+.dash{background:var(--bgc);border:1px solid var(--bds);border-radius:var(--radius);overflow:hidden;box-shadow:0 32px 80px var(--sh),0 0 0 1px rgba(0,174,239,.08);position:relative;z-index:1;}
+.dtop{background:var(--bgc2);border-bottom:1px solid var(--bd);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;}
+.wdots{display:flex;gap:6px;}.wdots span{width:10px;height:10px;border-radius:50%;}
+.wdots span:nth-child(1){background:#ff5f57}.wdots span:nth-child(2){background:#febc2e}.wdots span:nth-child(3){background:#28c840}
+.dtitle{font-size:.68rem;color:var(--t3);font-weight:500;letter-spacing:.04em;}
+.live-b{display:flex;align-items:center;gap:5px;font-size:.62rem;color:#28c840;font-weight:700;}
+.live-b span{width:5px;height:5px;background:#28c840;border-radius:50%;animation:bl 1.4s infinite;}
+.dbody{padding:16px;}
+.krow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.kc{background:var(--bgc2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:10px;}
+.kl{font-size:.58rem;color:var(--t3);font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.kv{font-family:var(--sans);font-size:1rem;font-weight:700;color:var(--t);line-height:1;}
+.kv.sky{color:var(--sky);}
+.kch{font-size:.52rem;font-weight:700;padding:2px 5px;border-radius:4px;margin-top:3px;display:inline-block;}
+.kch.up{background:rgba(40,200,64,.12);color:#28c840;}.kch.wn{background:rgba(254,188,46,.12);color:#febc2e;}
+.cbox{background:var(--bgc2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px;}
+.clbl{font-size:.6rem;color:var(--t3);margin-bottom:10px;font-weight:500;}
+.cbars{display:flex;align-items:flex-end;gap:4px;height:52px;}
+.cb{flex:1;border-radius:3px 3px 0 0;position:relative;overflow:hidden;background:rgba(0,174,239,.12);}
+.cb::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,var(--sky),rgba(0,174,239,.25));}
+.cb.hi::after{background:linear-gradient(to top,#00e5ff,var(--sky));}
+.zrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.zc{background:var(--bgc2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:8px 10px;display:flex;align-items:center;justify-content:space-between;}
+.zdot{width:5px;height:5px;border-radius:50%;margin-right:6px;}
+.zdot.g{background:#28c840}.zdot.y{background:#febc2e}.zdot.r{background:#ff5f57}
+.zn{font-size:.6rem;color:var(--t2);}.za{font-size:.65rem;font-weight:700;color:var(--t);}
+.fbadge{position:absolute;bottom:-16px;left:-20px;background:var(--bgc);border:1px solid rgba(40,200,64,.3);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px var(--sh);z-index:10;white-space:nowrap;}
+.fbd{width:7px;height:7px;background:#28c840;border-radius:50%;flex-shrink:0;animation:bl 1.5s infinite;}
+.fbt{font-size:.7rem;color:var(--t2);}.fbt strong{color:#28c840;display:block;font-size:.75rem;}
+
+/* SECTIONS */
+section{padding:120px 64px;}
+.cap{font-size:.7rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--sky);display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+.cap::before{content:'';width:20px;height:1.5px;background:var(--sky);}
+h2{font-family:var(--serif);font-size:clamp(1.9rem,3.2vw,3rem);font-weight:400;line-height:1.12;letter-spacing:-.02em;color:var(--t);margin-bottom:18px;}
+h2 em{font-style:italic;color:var(--sky);}
+.lead{font-size:.98rem;line-height:1.75;color:var(--t2);font-weight:300;max-width:500px;}
+
+/* MARQUEE */
+.mstrip{background:var(--bg2);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:15px 0;overflow:hidden;}
+.mtrack{display:flex;animation:marq 26s linear infinite;width:max-content;}
+.mtrack:hover{animation-play-state:paused;}
+@keyframes marq{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.mit{display:flex;align-items:center;gap:9px;padding:0 32px;font-size:.76rem;font-weight:500;color:var(--t3);white-space:nowrap;}
+.mit i{color:var(--sky);font-size:.72rem;}
+
+/* PROBLEM */
+#problem{background:var(--bg2);}
+.playout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.pcard{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);padding:28px;display:flex;gap:18px;transition:transform .35s var(--ease),border-color .35s,box-shadow .35s;margin-bottom:14px;position:relative;overflow:hidden;}
+.pcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--sky);transform:scaleY(0);transform-origin:top;transition:transform .4s var(--ease);}
+.pcard:hover{transform:translateX(8px);border-color:var(--bds);box-shadow:0 8px 40px var(--sh);}.pcard:hover::before{transform:scaleY(1);}
+.pico{width:44px;height:44px;flex-shrink:0;background:var(--sky-soft);border:1px solid var(--bds);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--sky);font-size:.95rem;}
+.pcard h4{font-size:.9rem;font-weight:600;margin-bottom:6px;color:var(--t);}
+.pcard p{font-size:.82rem;color:var(--t2);line-height:1.65;}
+
+/* SOLUTION */
+#solution{background:var(--bg);}
+.solinner{max-width:1200px;margin:0 auto;}
+.solhead{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:56px;align-items:end;}
+.bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.ben{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;transition:transform .35s var(--ease),border-color .35s;}
+.ben::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--sky),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease);}
+.ben:hover{transform:translateY(-6px);border-color:var(--bds);}.ben:hover::after{transform:scaleX(1);}
+.bnum{font-family:var(--serif);font-size:2.2rem;font-weight:400;color:var(--bds);line-height:1;margin-bottom:14px;}
+.ben h4{font-size:.88rem;font-weight:600;margin-bottom:8px;color:var(--t);}
+.ben p{font-size:.78rem;color:var(--t2);line-height:1.6;}
+
+/* HOW IT WORKS */
+#how{background:var(--bg2);overflow:hidden;}
+.howinner{max-width:1200px;margin:0 auto;}
+.howhead{text-align:center;margin-bottom:70px;}
+.howhead .lead{margin:0 auto;text-align:center;}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;position:relative;}
+.steps::before{content:'';position:absolute;top:40px;left:16.67%;right:16.67%;height:1px;background:linear-gradient(90deg,transparent,var(--sky),transparent);}
+.step{text-align:center;padding:0 28px;position:relative;z-index:1;}
+.snum{width:64px;height:64px;border-radius:50%;margin:0 auto 24px;background:var(--bgc);border:1.5px solid var(--bds);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:1.4rem;font-weight:400;color:var(--sky);position:relative;transition:transform .35s var(--ease),box-shadow .35s;}
+.step:hover .snum{transform:scale(1.1);box-shadow:0 0 0 7px rgba(0,174,239,.1);}
+.sico{position:absolute;bottom:-3px;right:-3px;width:22px;height:22px;background:var(--sky);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.5rem;color:#fff;}
+.step h4{font-size:.9rem;font-weight:600;margin-bottom:8px;color:var(--t);}
+.step p{font-size:.8rem;color:var(--t2);line-height:1.65;}
+
+/* SCREENS */
+#console-sec{background:var(--bg);overflow:hidden;}
+#map-sec{background:var(--bg2);overflow:hidden;}
+.slayout{max-width:1200px;margin:0 auto;display:grid;gap:72px;align-items:center;}
+.slayout.l{grid-template-columns:1fr 1.35fr;}
+.slayout.r{grid-template-columns:1.35fr 1fr;}
+.flist{list-style:none;margin-top:28px;display:flex;flex-direction:column;gap:11px;}
+.flist li{display:flex;align-items:flex-start;gap:11px;font-size:.85rem;color:var(--t2);line-height:1.55;}
+.flist li i{color:var(--sky);font-size:.72rem;margin-top:3px;flex-shrink:0;}
+.iframe{position:relative;border-radius:var(--radius);overflow:visible;}
+.iframe img{width:100%;display:block;border-radius:var(--radius);border:1px solid var(--bds);box-shadow:0 28px 70px var(--sh);}
+.icard{position:absolute;bottom:-18px;right:-18px;background:var(--bgc);border:1px solid var(--bds);border-radius:14px;padding:14px 18px;box-shadow:0 12px 40px var(--sh);display:flex;align-items:center;gap:12px;min-width:195px;}
+.icard-ico{width:36px;height:36px;border-radius:10px;background:var(--sky-soft);border:1px solid var(--bds);display:flex;align-items:center;justify-content:center;color:var(--sky);font-size:.9rem;flex-shrink:0;}
+.icard-t strong{display:block;font-size:.76rem;font-weight:600;color:var(--t);}
+.icard-t span{font-size:.66rem;color:var(--t3);}
+.mmock{background:var(--bgc);border:1px solid var(--bds);border-radius:var(--radius);overflow:hidden;box-shadow:0 28px 70px var(--sh);}
+.mbar{background:var(--bgc2);border-bottom:1px solid var(--bd);padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:.7rem;font-weight:600;color:var(--sky);}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px;}
+.mzone{background:var(--bgc2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:16px;text-align:center;position:relative;transition:border-color .3s,transform .3s;}
+.mzone:hover{border-color:var(--bds);transform:scale(1.02);}
+.mzbadge{position:absolute;top:8px;right:8px;font-size:.52rem;font-weight:700;padding:2px 6px;border-radius:4px;}
+.mzbadge.open{background:rgba(40,200,64,.12);color:#28c840;}.mzbadge.busy{background:rgba(254,188,46,.12);color:#febc2e;}.mzbadge.vip{background:rgba(0,174,239,.15);color:var(--sky);}
+.mzico{font-size:1.3rem;margin-bottom:7px;}.mzn{font-size:.72rem;font-weight:600;margin-bottom:4px;color:var(--t);}.mzs{font-size:.6rem;color:var(--t3);}
+.mleg{border-top:1px solid var(--bd);padding:11px 16px;display:flex;gap:16px;}
+.mli{display:flex;align-items:center;gap:5px;font-size:.62rem;color:var(--t3);}
+.mld{width:6px;height:6px;border-radius:50%;}
+
+/* TESTIMONIALS */
+#proof{background:var(--bg);}
+.proofin{max-width:1200px;margin:0 auto;}
+.proofh{text-align:center;margin-bottom:52px;}
+.proofh .lead{margin:0 auto;text-align:center;}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.pqcard{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);padding:32px;transition:transform .35s var(--ease),border-color .35s;}
+.pqcard:hover{transform:translateY(-6px);border-color:var(--bds);}
+.pstars{margin-bottom:14px;color:var(--sky);font-size:.7rem;letter-spacing:2px;}
+.pq{font-family:var(--serif);font-size:1.05rem;font-weight:400;font-style:italic;line-height:1.65;color:var(--t);margin-bottom:22px;}
+.pq span{color:var(--sky);font-style:normal;}
+.pperson{display:flex;align-items:center;gap:12px;}
+.pav{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--sky-soft),rgba(0,128,200,.2));border:1px solid var(--bds);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:600;color:var(--sky);flex-shrink:0;}
+.pm strong{display:block;font-size:.8rem;font-weight:600;color:var(--t);}.pm span{font-size:.7rem;color:var(--t3);}
+
+/* STATS */
+#stats{background:linear-gradient(135deg,var(--sky-deep) 0%,var(--sky) 60%,#00c8f8 100%);padding:64px;}
+.srow{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:40px;text-align:center;}
+.sn{font-family:var(--serif);font-size:3rem;font-weight:400;color:#fff;line-height:1;margin-bottom:8px;}
+.sl{font-size:.78rem;color:rgba(255,255,255,.72);font-weight:400;}
+
+/* FOR WHO */
+#forwho{background:var(--bg2);}
+.fwin{max-width:1200px;margin:0 auto;text-align:center;}
+.fwin .lead{margin:0 auto 50px;}
+.chips{display:flex;flex-wrap:wrap;gap:11px;justify-content:center;}
+.chip{display:flex;align-items:center;gap:9px;background:var(--bgc);border:1px solid var(--bd);border-radius:100px;padding:11px 20px;font-size:.82rem;font-weight:500;color:var(--t2);transition:all .3s;cursor:none;}
+.chip i{color:var(--sky);font-size:.78rem;}
+.chip:hover{background:var(--sky-soft);border-color:var(--bds);color:var(--t);transform:translateY(-2px);}
+
+/* ANALYTICS */
+#analytics{background:var(--bg);}
+.agrid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.mgr{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.mc{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);padding:24px;transition:transform .3s,border-color .3s;}
+.mc:hover{transform:translateY(-4px);border-color:var(--bds);}
+.mc-ico{width:40px;height:40px;border-radius:11px;background:var(--sky-soft);border:1px solid var(--bds);display:flex;align-items:center;justify-content:center;color:var(--sky);font-size:.85rem;margin-bottom:14px;}
+.mc h5{font-size:.84rem;font-weight:600;margin-bottom:6px;color:var(--t);}
+.mc p{font-size:.75rem;color:var(--t2);line-height:1.6;}
+
+/* TIMELINE */
+#timeline{background:var(--bg2);overflow:hidden;}
+.tlin{max-width:880px;margin:0 auto;}
+.tlh{text-align:center;margin-bottom:56px;}
+.tl{position:relative;}
+.tl::before{content:'';position:absolute;left:23px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--sky),transparent);}
+.tli{display:flex;gap:28px;align-items:flex-start;padding:24px 0;position:relative;}
+.tnode{width:48px;height:48px;border-radius:50%;flex-shrink:0;background:var(--bgc);border:1.5px solid var(--bds);display:flex;align-items:center;justify-content:center;color:var(--sky);font-size:.85rem;position:relative;z-index:1;transition:background .3s,transform .3s;}
+.tli:hover .tnode{background:var(--sky-soft);transform:scale(1.08);}
+.tlc{flex:1;padding-top:8px;}
+.tltag{display:inline-block;font-size:.6rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--sky);background:var(--sky-soft);border:1px solid var(--bds);padding:3px 10px;border-radius:100px;margin-bottom:7px;}
+.tlc h4{font-size:.92rem;font-weight:600;margin-bottom:5px;color:var(--t);}
+.tlc p{font-size:.82rem;color:var(--t2);line-height:1.65;}
+
+/* CTA FORM */
+#ctaform{background:var(--bg);position:relative;overflow:hidden;}
+#ctaform::before{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:700px;height:350px;background:radial-gradient(ellipse,rgba(0,174,239,.09),transparent 70%);pointer-events:none;}
+.fwrap{max-width:720px;margin:0 auto;text-align:center;position:relative;z-index:2;}
+.fwrap h2{margin-bottom:14px;}.fwrap .lead{margin:0 auto 44px;text-align:center;}
+.fbox{background:var(--bgc);border:1px solid var(--bd);border-radius:var(--radius);padding:42px;text-align:left;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-bottom:13px;}
+.fg{display:flex;flex-direction:column;gap:7px;}
+.fg label{font-size:.68rem;font-weight:600;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{background:var(--bgc2);border:1px solid var(--bd);border-radius:var(--radius-sm);color:var(--t);font-family:var(--sans);font-size:.875rem;padding:12px 14px;outline:none;cursor:none;transition:border-color .3s,background .3s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--sky);background:rgba(0,174,239,.04);}
+.fg select option{background:var(--bg);}
+.fg textarea{resize:none;height:80px;}
+.fsub{margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:11px;}
+.btn-submit{width:100%;padding:15px;background:linear-gradient(135deg,var(--sky),var(--sky-deep));color:#fff;font-family:var(--sans);font-weight:600;font-size:.88rem;border:none;border-radius:100px;cursor:none;box-shadow:0 4px 30px rgba(0,174,239,.32);display:flex;align-items:center;justify-content:center;gap:9px;transition:transform .3s,box-shadow .3s;}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 44px rgba(0,174,239,.52);}
+.fnote{font-size:.7rem;color:var(--t3);}
+.fnote a{color:var(--sky);text-decoration:none;}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--bd);padding:34px 64px;display:flex;align-items:center;justify-content:space-between;}
+.ftbrand{font-family:var(--sans);font-weight:700;font-size:1rem;color:var(--t);}
+.ftbrand span{color:var(--sky);}
+.ftcopy{font-size:.73rem;color:var(--t3);}
+
+/* TICKER */
+.ticker{position:fixed;bottom:26px;right:26px;z-index:700;background:var(--bgc);border:1px solid rgba(40,200,64,.25);border-radius:14px;padding:11px 15px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 36px var(--sh);opacity:0;transform:translateY(16px);animation:tin .6s 2.5s var(--ease) forwards;max-width:225px;}
+@keyframes tin{to{opacity:1;transform:translateY(0);}}
+.tdot{width:7px;height:7px;background:#28c840;border-radius:50%;flex-shrink:0;animation:bl 1.4s infinite;}
+.ttxt{font-size:.7rem;line-height:1.45;color:var(--t2);}
+.ttxt strong{display:block;font-size:.76rem;color:#28c840;}
+
+/* REVEAL */
+.r{opacity:0;transform:translateY(34px);transition:opacity .7s var(--ease),transform .7s var(--ease);}
+.r.on{opacity:1;transform:translateY(0);}
+.r.d1{transition-delay:.08s}.r.d2{transition-delay:.16s}.r.d3{transition-delay:.24s}
+.r.d4{transition-delay:.32s}.r.d5{transition-delay:.40s}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+nav{padding:14px 22px;}nav.stuck{padding:11px 22px;}
+.nav-mid{display:none;}
+#hero,section{padding:90px 22px 70px;}
+.hero-in,.playout,.solhead,.slayout.l,.slayout.r,.agrid,.pgrid,.steps{grid-template-columns:1fr;gap:44px;}
+.bgrid,.mgr,.krow,.frow,.srow{grid-template-columns:1fr 1fr;}
+.frow{grid-template-columns:1fr;}
+footer{flex-direction:column;gap:10px;text-align:center;padding:26px 22px;}
+.dwrap{animation:none;}.fbadge,.icard{display:none;}
+#stats{padding:50px 22px;}.steps::before{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="cur" id="C"></div>
+<div class="cur-ring" id="CR"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a class="nav-brand" href="#"><div class="brand-mark"><i class="fa-solid fa-bolt-lightning"></i></div>Orlay<span class="brand-pay">pay</span></a>
+  <div class="nav-mid">
+    <a href="#problem">Problema</a>
+    <a href="#how">Come funziona</a>
+    <a href="#forwho">Per chi</a>
+    <a href="#analytics">Analytics</a>
+  </div>
+  <div class="nav-right">
+    <button class="theme-btn" id="themeBtn"><i class="fa-solid fa-moon" id="themeIco"></i></button>
+    <a href="#ctaform" class="btn-nav"><i class="fa-solid fa-calendar-check"></i>Richiedi demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hmesh"></div><div class="hlines"></div>
+  <div class="hero-in">
+    <div class="r">
+      <div class="pill"><div class="pdot"></div>Continuità di vendita per eventi live</div>
+      <h1>Il pubblico è già lì. Non perdere vendite nei <em>momenti di picco.</em></h1>
+      <p class="hbody">Orlay Pay aiuta organizzatori, venue e operatori food &amp; beverage a rendere ordine, incasso e ritiro più fluidi: meno code, meno rinunce, più controllo operativo.</p>
+      <div class="hactions">
+        <a href="#ctaform" class="btn-nav"><i class="fa-solid fa-arrow-right"></i>Richiedi una demo</a>
+        <a href="#how" class="btn-ghost"><i class="fa-solid fa-play"></i>Come funziona</a>
+      </div>
+      <div class="htags"><span class="htag">Food &amp; beverage</span><span class="htag">Hospitality</span><span class="htag">Aree VIP</span><span class="htag">Punti bar</span><span class="htag">Merchandising</span></div>
+    </div>
+    <div class="r d2">
+      <div class="dwrap">
+        <div class="dglow"></div>
+        <div class="dash">
+          <div class="dtop"><div class="wdots"><span></span><span></span><span></span></div><div class="dtitle">Console organizzatore · LIVE</div><div class="live-b"><span></span>Summer Festival 2026</div></div>
+          <div class="dbody">
+            <div class="krow">
+              <div class="kc"><div class="kl">Incassato</div><div class="kv sky">37.866€</div><span class="kch up">LIVE</span></div>
+              <div class="kc"><div class="kl">Ordini</div><div class="kv">3.000</div><span class="kch up">+8%</span></div>
+              <div class="kc"><div class="kl">Conversione</div><div class="kv">65%</div><span class="kch up">↑</span></div>
+              <div class="kc"><div class="kl">Ticket medio</div><div class="kv">18.99€</div><span class="kch wn">Picco</span></div>
+            </div>
+            <div class="cbox"><div class="clbl">Ordini nel tempo</div><div class="cbars" id="bars"></div></div>
+            <div class="zrow">
+              <div class="zc"><div><span class="zdot g"></span><span class="zn">Bar A · Gate 1</span></div><span class="za">€8.240</span></div>
+              <div class="zc"><div><span class="zdot y"></span><span class="zn">Food Court</span></div><span class="za">€6.100</span></div>
+              <div class="zc"><div><span class="zdot g"></span><span class="zn">Area VIP</span></div><span class="za">€12.500</span></div>
+              <div class="zc"><div><span class="zdot r"></span><span class="zn">Merch Stand</span></div><span class="za">€2.900</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="fbadge"><div class="fbd"></div><div class="fbt"><strong>+47 ordini completati</strong>Area VIP · adesso</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mstrip"><div class="mtrack" id="mt"></div></div>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="playout">
+    <div class="r">
+      <div class="cap">Il problema</div>
+      <h2>La vendita si perde <em>prima</em> del pagamento.</h2>
+      <p class="lead">Quando l'affluenza cresce, il punto di servizio diventa il collo di bottiglia: il pubblico aspetta, ordina meno o rinuncia. Lo staff gestisce confusione invece di servire.</p>
+    </div>
+    <div>
+      <div class="pcard r d1"><div class="pico"><i class="fa-solid fa-hourglass-half"></i></div><div><h4>Code e doppia attesa</h4><p>Il fan perde tempo tra scelta, pagamento e ritiro — nei momenti critici, rinuncia e la vendita è persa.</p></div></div>
+      <div class="pcard r d2"><div class="pico"><i class="fa-solid fa-users-slash"></i></div><div><h4>Staff sotto pressione</h4><p>Il banco rallenta quando deve ricostruire ordini, importi e prossime azioni senza un sistema unificato.</p></div></div>
+      <div class="pcard r d3"><div class="pico"><i class="fa-solid fa-chart-scatter"></i></div><div><h4>Dati frammentati</h4><p>A fine evento è difficile capire dove si è persa domanda, e ogni edizione riparte quasi da zero.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="howinner">
+    <div class="howhead r">
+      <div class="cap" style="justify-content:center">Come funziona</div>
+      <h2>Tre flussi connessi.<br><em>Un'unica regia.</em></h2>
+      <p class="lead">Dal momento in cui il fan scansiona il QR code fino al ritiro — ogni passaggio è tracciato, orchestrato e leggibile in tempo reale dall'organizzatore.</p>
+    </div>
+    <div class="steps">
+      <div class="step r d1"><div class="snum">1<div class="sico"><i class="fa-solid fa-qrcode"></i></div></div><h4>Ordine</h4><p>Il fan accede via QR dal browser — nessun download. Scopre menu, servizi e punti di ritiro in modo guidato.</p></div>
+      <div class="step r d2"><div class="snum">2<div class="sico"><i class="fa-solid fa-credit-card"></i></div></div><h4>Pagamento</h4><p>Completato online o al banco come fallback. Se la rete mobile è congestionata, la rete guest locale garantisce la transazione.</p></div>
+      <div class="step r d3"><div class="snum">3<div class="sico"><i class="fa-solid fa-bag-shopping"></i></div></div><h4>Ritiro</h4><p>Lo staff vede l'ordine già strutturato. Incasso e consegna nello stesso flusso — meno errori, più velocità.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section id="solution">
+  <div class="solinner">
+    <div class="solhead">
+      <div class="r"><div class="cap">La soluzione</div><h2>Una regia unica per trasformare il servizio in <em>ricavo.</em></h2></div>
+      <div class="r d1"><p class="lead">Orlay Pay rende più leggibile il percorso del fan, più veloce il lavoro dello staff e più chiaro il controllo dell'organizzatore. Il risultato è un evento più ordinato nei momenti critici.</p></div>
+    </div>
+    <div class="bgrid">
+      <div class="ben r d1"><div class="bnum">01</div><h4>Più ordini completati</h4><p>Soprattutto nelle finestre di massima domanda, quando ogni secondo conta.</p></div>
+      <div class="ben r d2"><div class="bnum">02</div><h4>Più velocità al banco</h4><p>Meno passaggi manuali, meno errori, meno improvvisazione sul campo.</p></div>
+      <div class="ben r d3"><div class="bnum">03</div><h4>Più controllo per zona</h4><p>Ordini, incassi, ritiri e performance leggibili per area — in tempo reale.</p></div>
+      <div class="ben r d4"><div class="bnum">04</div><h4>Più valore post-evento</h4><p>Dati utili per pricing, staffing e layout del prossimo evento.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONSOLE SCREEN -->
+<section id="console-sec">
+  <div class="slayout l">
+    <div class="r">
+      <div class="cap">Console organizzatore</div>
+      <h2>Controllo <em>live</em> dell'evento.</h2>
+      <p class="lead">Monitora ordini, incassi, ritiri, punti di servizio e aree critiche da una sola vista operativa.</p>
+      <ul class="flist">
+        <li><i class="fa-solid fa-circle-check"></i>KPI in tempo reale: incassato, ordini, conversione, ticket medio</li>
+        <li><i class="fa-solid fa-circle-check"></i>Grafici andamento per finestra oraria e area</li>
+        <li><i class="fa-solid fa-circle-check"></i>Alert automatici su colli di bottiglia</li>
+        <li><i class="fa-solid fa-circle-check"></i>Device online/offline e anomalie fiscali monitorate</li>
+      </ul>
+    </div>
+    <div class="iframe r d2">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&auto=format&fit=crop&q=80" alt="Console organizzatore" loading="lazy">
+      <div class="icard"><div class="icard-ico"><i class="fa-solid fa-chart-line"></i></div><div class="icard-t"><strong>€37.866 incassato</strong><span>aggiornato adesso · LIVE</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MAP SCREEN -->
+<section id="map-sec">
+  <div class="slayout r">
+    <div class="r">
+      <div class="mmock">
+        <div class="mbar"><i class="fa-solid fa-map-location-dot"></i>Mappa evento — Rock Fest 2026</div>
+        <div class="mgrid">
+          <div class="mzone"><span class="mzbadge vip">VIP</span><div class="mzico">🏆</div><div class="mzn">Area VIP</div><div class="mzs">Ingresso riservato · Gate A</div></div>
+          <div class="mzone"><span class="mzbadge open">Aperto</span><div class="mzico">🍔</div><div class="mzn">Food Court</div><div class="mzs">6 punti attivi</div></div>
+          <div class="mzone"><span class="mzbadge busy">Affollato</span><div class="mzico">🍺</div><div class="mzn">Bar A · Gate 1</div><div class="mzs">Attesa ~4 min</div></div>
+          <div class="mzone"><span class="mzbadge open">Aperto</span><div class="mzico">👕</div><div class="mzn">Merch Stand</div><div class="mzs">Ritiro online disponibile</div></div>
+        </div>
+        <div class="mleg">
+          <div class="mli"><div class="mld" style="background:#28c840"></div>Aperto</div>
+          <div class="mli"><div class="mld" style="background:#febc2e"></div>Affollato</div>
+          <div class="mli"><div class="mld" style="background:var(--sky)"></div>VIP</div>
+        </div>
+      </div>
+    </div>
+    <div class="r d2">
+      <div class="cap">Mappa e percorsi</div>
+      <h2>L'evento diventa più <em>leggibile.</em></h2>
+      <p class="lead">Mappe, informazioni e percorsi aiutano il pubblico a capire dove andare e riducono domande ripetitive allo staff.</p>
+      <ul class="flist">
+        <li><i class="fa-solid fa-circle-check"></i>Percorsi dedicati per VIP, merch e pickup specifici</li>
+        <li><i class="fa-solid fa-circle-check"></i>Stato delle aree visibile ai fan in tempo reale</li>
+        <li><i class="fa-solid fa-circle-check"></i>Riduce pressione sul personale di ingresso</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="srow">
+    <div class="r"><div class="sn">+35%</div><div class="sl">Ordini completati nei picchi</div></div>
+    <div class="r d1"><div class="sn">-60%</div><div class="sl">Tempo medio di attesa</div></div>
+    <div class="r d2"><div class="sn">100%</div><div class="sl">Dati operativi in tempo reale</div></div>
+    <div class="r d3"><div class="sn">0</div><div class="sl">Download richiesti al fan</div></div>
+  </div>
+</section>
+
+<!-- PROOF -->
+<section id="proof">
+  <div class="proofin">
+    <div class="proofh r">
+      <div class="cap" style="justify-content:center">Cosa dicono</div>
+      <h2>Risultati reali,<br><em>non percezioni.</em></h2>
+      <p class="lead">Organizzatori, venue manager e responsabili F&B che hanno trasformato i picchi di affluenza in opportunità di ricavo.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pqcard r d1"><div class="pstars">★★★★★</div><p class="pq">"Nei concerti da 20.000 persone, il problema non è vendere — è <span>riuscire a consegnare</span>. Con Orlay Pay il banco non si è più fermato."</p><div class="pperson"><div class="pav">MR</div><div class="pm"><strong>Marco Rossi</strong><span>Direttore operativo · Live Nation Italy</span></div></div></div>
+      <div class="pqcard r d2"><div class="pstars">★★★★★</div><p class="pq">"La console ci ha permesso di <span>spostare staff in tempo reale</span> durante il picco. Impossibile farlo prima senza dati live."</p><div class="pperson"><div class="pav">SC</div><div class="pm"><strong>Sara Conti</strong><span>Event Manager · Ippodromo SNAI</span></div></div></div>
+      <div class="pqcard r d3"><div class="pstars">★★★★★</div><p class="pq">"Abbiamo aumentato il ticket medio del <span>22%</span> semplicemente perché i fan riuscivano a ordinare senza aspettare."</p><div class="pperson"><div class="pav">AF</div><div class="pm"><strong>Andrea Ferrari</strong><span>F&B Manager · Arena di Verona</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR WHO -->
+<section id="forwho">
+  <div class="fwin">
+    <div class="cap r" style="justify-content:center">Per chi è</div>
+    <h2 class="r d1">Pensato per eventi dove ogni minuto<br>di coda <em>costa ricavo.</em></h2>
+    <p class="lead r d2">Orlay Pay è adatto a contesti con alta densità di pubblico, più punti di servizio e domanda concentrata in finestre brevi.</p>
+    <div class="chips r d3">
+      <div class="chip"><i class="fa-solid fa-music"></i>Festival</div>
+      <div class="chip"><i class="fa-solid fa-microphone-lines"></i>Concerti</div>
+      <div class="chip"><i class="fa-solid fa-futbol"></i>Stadi e palazzetti</div>
+      <div class="chip"><i class="fa-solid fa-utensils"></i>Food court</div>
+      <div class="chip"><i class="fa-solid fa-star"></i>Hospitality</div>
+      <div class="chip"><i class="fa-solid fa-crown"></i>Aree VIP</div>
+      <div class="chip"><i class="fa-solid fa-shirt"></i>Merchandising</div>
+      <div class="chip"><i class="fa-solid fa-building"></i>Corporate</div>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYTICS -->
+<section id="analytics">
+  <div class="agrid">
+    <div class="r">
+      <div class="cap">Analytics post-evento</div>
+      <h2>Il valore non finisce<br>a <em>fine serata.</em></h2>
+      <p class="lead">Leggi cosa converte, cosa rallenta e dove si perde domanda. Usa i dati per migliorare pricing, staffing, layout e offerta del prossimo evento.</p>
+    </div>
+    <div class="mgr">
+      <div class="mc r d1"><div class="mc-ico"><i class="fa-solid fa-map-location-dot"></i></div><h5>Performance per area</h5><p>Quali zone vendono e quali rallentano.</p></div>
+      <div class="mc r d2"><div class="mc-ico"><i class="fa-solid fa-bolt"></i></div><h5>Picchi reali</h5><p>Quando la domanda cresce davvero.</p></div>
+      <div class="mc r d3"><div class="mc-ico"><i class="fa-solid fa-layer-group"></i></div><h5>Mix prodotti</h5><p>Cosa viene scelto, cosa resta indietro.</p></div>
+      <div class="mc r d4"><div class="mc-ico"><i class="fa-solid fa-brain"></i></div><h5>Decisioni migliori</h5><p>Meno percezioni, più evidenze operative.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section id="timeline">
+  <div class="tlin">
+    <div class="tlh r">
+      <div class="cap" style="justify-content:center">Onboarding</div>
+      <h2>Operativo in pochi giorni,<br><em>non settimane.</em></h2>
+      <p class="lead" style="margin:0 auto;text-align:center">Nessuna integrazione complessa. Nessun hardware proprietario obbligatorio. Solo configurazione, test e via.</p>
+    </div>
+    <div class="tl">
+      <div class="tli r"><div class="tnode"><i class="fa-solid fa-phone"></i></div><div class="tlc"><span class="tltag">Giorno 1</span><h4>Call di discovery</h4><p>Analizziamo insieme flussi, aree, tipologia di evento e obiettivi operativi. Definiamo il perimetro e la configurazione iniziale.</p></div></div>
+      <div class="tli r d1"><div class="tnode"><i class="fa-solid fa-gear"></i></div><div class="tlc"><span class="tltag">Giorno 2–4</span><h4>Setup e configurazione</h4><p>Configuriamo menu, listini, aree, punti di servizio e mappa evento. Il team Orlay Pay supporta ogni fase del processo.</p></div></div>
+      <div class="tli r d2"><div class="tnode"><i class="fa-solid fa-flask"></i></div><div class="tlc"><span class="tltag">Giorno 5</span><h4>Test e simulazione</h4><p>Simuliamo il flusso completo — ordine, pagamento, ritiro — e verifichiamo console, mappa e alert in condizioni reali.</p></div></div>
+      <div class="tli r d3"><div class="tnode"><i class="fa-solid fa-rocket"></i></div><div class="tlc"><span class="tltag">Evento</span><h4>Go live</h4><p>Support dedicato durante l'evento. La console è attiva, i dati scorrono in tempo reale, il tuo team è pronto a servire.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FORM -->
+<section id="ctaform">
+  <div class="fwrap">
+    <div class="cap r" style="justify-content:center">Richiedi una demo</div>
+    <h2 class="r d1">Vuoi capire dove il tuo evento<br>sta <em>perdendo vendite?</em></h2>
+    <p class="lead r d2">Prenota una demo: analizziamo insieme flussi, punti bar, aree critiche e opportunità di ricavo.</p>
+    <div class="fbox r d3">
+      <div class="frow">
+        <div class="fg"><label>Nome *</label><input type="text" placeholder="Mario Rossi"></div>
+        <div class="fg"><label>Azienda / Venue *</label><input type="text" placeholder="Venue, festival, stadio..."></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Tipo di evento *</label><select><option value="" disabled selected>Seleziona</option><option>Festival musicale</option><option>Concerto</option><option>Evento sportivo</option><option>Food court</option><option>Corporate</option><option>Altro</option></select></div>
+        <div class="fg"><label>Email *</label><input type="email" placeholder="mario@venue.it"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>Telefono</label><input type="tel" placeholder="+39 340 ..."></div>
+        <div class="fg"><label>Messaggio</label><input type="text" placeholder="Come possiamo aiutarti?"></div>
+      </div>
+      <div class="fsub">
+        <button class="btn-submit" id="sb" onclick="handleSub(event)"><i class="fa-solid fa-paper-plane"></i>Richiedi una demo</button>
+        <p class="fnote">Ti ricontattiamo solo per valutare il progetto Orlay Pay. <a href="#">Privacy policy</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ftbrand">Orlay<span>pay</span></div>
+  <div class="ftcopy">© 2026 Orlay Pay — Continuità di vendita per eventi live ad alta affluenza</div>
+  <div style="font-size:.7rem;color:var(--t3)">Order · Payment · Pickup</div>
+</footer>
+
+<!-- TICKER -->
+<div class="ticker"><div class="tdot"></div><div class="ttxt" id="tt"><strong>+47 ordini completati</strong>Summer Festival · Area VIP</div></div>
+
+<script>
+/* CURSOR */
+const C=document.getElementById('C'),CR=document.getElementById('CR');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function loop(){rx+=(mx-rx)*.15;ry+=(my-ry)*.15;C.style.cssText=`left:${mx}px;top:${my}px`;CR.style.cssText=`left:${rx}px;top:${ry}px`;requestAnimationFrame(loop);})();
+document.querySelectorAll('a,button,.chip,.pcard,.ben,.mc,.pqcard,.step,.tli,.mzone').forEach(el=>{el.addEventListener('mouseenter',()=>{C.classList.add('x');CR.classList.add('x');});el.addEventListener('mouseleave',()=>{C.classList.remove('x');CR.classList.remove('x');});});
+
+/* NAV */
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('stuck',scrollY>50));
+
+/* THEME */
+const html=document.documentElement;
+document.getElementById('themeBtn').addEventListener('click',()=>{const d=html.dataset.theme==='dark';html.dataset.theme=d?'light':'dark';document.getElementById('themeIco').className=d?'fa-solid fa-sun':'fa-solid fa-moon';});
+
+/* REVEAL */
+const obs=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');obs.unobserve(e.target);}});},{threshold:0.1});
+document.querySelectorAll('.r').forEach(el=>obs.observe(el));
+
+/* BARS */
+const barsEl=document.getElementById('bars');
+[15,22,18,30,42,55,72,90,100,85,70,62,50,44,52].forEach((h,i)=>{const b=document.createElement('div');b.className='cb'+(h>=85?' hi':'');b.style.cssText=`height:${h}%;transition-delay:${i*.04}s`;barsEl.appendChild(b);});
+
+/* MARQUEE */
+const items=[{i:'fa-music',t:'Festival'},{i:'fa-futbol',t:'Stadi'},{i:'fa-utensils',t:'Food Court'},{i:'fa-crown',t:'VIP Experience'},{i:'fa-shirt',t:'Merchandising'},{i:'fa-microphone',t:'Concerti'},{i:'fa-building',t:'Corporate Events'},{i:'fa-beer-mug-empty',t:'Bar & Beverage'},{i:'fa-star',t:'Hospitality'},{i:'fa-ticket',t:'Live Events'}];
+const mt=document.getElementById('mt');
+[...items,...items].forEach(it=>{mt.innerHTML+=`<div class="mit"><i class="fa-solid ${it.i}"></i>${it.t}</div><span style="color:var(--bd);padding:0 4px">·</span>`;});
+
+/* TICKER */
+const msgs=[{s:'+47 ordini completati',b:'Summer Festival · Area VIP'},{s:'€1.240 incassato',b:'Concerto Milano · Bar A'},{s:'Picco rilevato',b:'Food Court Zone 3 · Intervallo'},{s:'+23% conversione',b:'Rock Fest · Gate Nord'}];
+let ti=0;const tt=document.getElementById('tt');tt.style.transition='opacity .3s';
+setInterval(()=>{tt.style.opacity='0';setTimeout(()=>{ti=(ti+1)%msgs.length;tt.innerHTML=`<strong>${msgs[ti].s}</strong>${msgs[ti].b}`;tt.style.opacity='1';},300);},4200);
+
+/* FORM */
+function handleSub(e){e.preventDefault();const b=document.getElementById('sb');b.innerHTML='<i class="fa-solid fa-circle-check"></i> Richiesta inviata!';b.style.background='linear-gradient(135deg,#00d4a0,#00a078)';b.disabled=true;}
+</script>
+</body>
+</html>
